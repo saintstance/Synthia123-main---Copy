@@ -45,6 +45,7 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
         )}
 
         <button
+          aria-label="Toggle dark mode"
           onClick={toggleTheme}
           className="p-2 text-gray-600 rounded-lg hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-slate-700 transition-colors"
         >

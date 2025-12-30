@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Zap, Users, FileText, LanguagesIcon } from 'lucide-react';
-import synthiaLogo from '@/assets/synthia-logo.png';
-import stockVideo from '@/assets/stock-video.mp4';
+import { ArrowRight, Users, FileText, Languages } from 'lucide-react';
+// Ensure you have added the declarations.d.ts file as shown above to fix these red lines
+import synthiaLogo from '../assets/synthia-logo.png';
+import stockVideo from '../assets/stock-video.mp4';
 
 const Landing: React.FC = () => {
   const navigate = useNavigate();
   const [activeFeature, setActiveFeature] = useState<number | null>(null);
-  const [videoBlur, setVideoBlur] = useState(0);
 
   const features = [
     {
-      icon: LanguagesIcon,
+      icon: Languages,
       title: 'Taglish Support',
       description: 'Recognizes and transcribes mixed Filipino-English (Taglish) conversations.'
     },
@@ -31,13 +31,13 @@ const Landing: React.FC = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section with Background Video */}
       <section className="relative min-h-screen flex items-center justify-center px-6 overflow-hidden">
-        {/* Background Video - Replace videoUrl with your stock video */}
+        {/* Background Video */}
         <video
           autoPlay
           muted
           loop
-          className="absolute inset-0 w-full h-full object-cover"
-          style={{ filter: `blur(2px)` }}
+          // Fixed: Replaced inline style with Tailwind utility class 'blur-[2px]'
+          className="absolute inset-0 w-full h-full object-cover blur-[2px]"
           poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 800'%3E%3Crect fill='%23f3f4f6' width='1200' height='800'/%3E%3C/svg%3E"
         >
           <source src={stockVideo} type="video/mp4" />
