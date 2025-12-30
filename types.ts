@@ -6,16 +6,6 @@ export interface NavItem {
   icon: LucideIcon;
 }
 
-export interface Task {
-  id: string;
-  title: string;
-  description?: string;
-  category: 'Personal' | 'Workspace';
-  dueDate?: string;
-  status: 'todo' | 'ongoing' | 'completed';
-  workspace?: string;
-}
-
 export interface Meeting {
   id: string;
   title: string;

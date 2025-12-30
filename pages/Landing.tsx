@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Users, FileText, Languages } from 'lucide-react';
-// Ensure you have added the declarations.d.ts file as shown above to fix these red lines
+
 import synthiaLogo from '../assets/synthia-logo.png';
 import stockVideo from '../assets/stock-video.mp4';
 

@@ -26,9 +26,7 @@ const Sidebar: React.FC = () => {
     { name: 'Notification', path: '/notifications', icon: Bell, badge: hasUnread },
     { name: 'Calendar', path: '/calendar', icon: Calendar },
     { name: 'Meeting', path: '/meetings', icon: Video },
-    { name: 'Collaboration', path: '/collaboration', icon: Users },
     { name: 'Meeting Summary', path: '/meeting-summary', icon: NotepadText },
-    { name: 'Task', path: '/tasks', icon: CheckSquare },
   ];
 
   return (

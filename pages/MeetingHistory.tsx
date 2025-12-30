@@ -193,16 +193,27 @@ const MeetingHistory: React.FC = () => {
                         {/* Action Buttons */}
                         <div className="flex items-center gap-2">
                             {meeting.hasRecording && (
-                                <button className="p-2 text-gray-500 hover:text-violet-600 hover:bg-violet-50 dark:hover:bg-slate-700 rounded-full transition-colors" title="Play Recording">
+                                <button 
+                                  aria-label="Play recording"
+                                  className="p-2 text-gray-500 hover:text-violet-600 hover:bg-violet-50 dark:hover:bg-slate-700 rounded-full transition-colors" 
+                                  title="Play Recording"
+                                >
                                     <PlayCircle className="w-5 h-5" />
                                 </button>
                             )}
                             {meeting.hasTranscript && (
-                                <button className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-700 rounded-full transition-colors" title="View Transcript">
+                                <button 
+                                  aria-label="View transcript"
+                                  className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-700 rounded-full transition-colors" 
+                                  title="View Transcript"
+                                >
                                     <FileText className="w-5 h-5" />
                                 </button>
                             )}
-                            <button className="p-2 text-gray-500 hover:text-gray-800 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-full transition-colors">
+                            <button 
+                              aria-label="Download assets"
+                              className="p-2 text-gray-500 hover:text-gray-800 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-full transition-colors"
+                            >
                                 <Download className="w-5 h-5" />
                             </button>
                             <div className="w-px h-6 bg-gray-200 dark:bg-slate-700 mx-1"></div>
