@@ -3,13 +3,38 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { 
   ArrowLeft, FileText, CheckSquare, Mic, 
   MessageSquare, Users, LayoutGrid, Upload, 
-  Download, Play, MoreVertical, File, Clock, Search
+  Download, Play, MoreVertical, File, Clock, Search,
+  FilePlus, FileOutput, GripVertical, Type, Gavel, 
+  AlertTriangle, Check, ChevronRight, FileBarChart, Mail,
+  Loader2, AlertCircle, CheckCircle2
 } from 'lucide-react';
+
+// You can keep this import if you still use the modal elsewhere
+import ReportTemplateModal from '../components/ReportTemplateModal'; 
 
 const MeetingSummaryDetail: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  const [activeTab, setActiveTab] = useState('summary');
+  const [activeTab, setActiveTab] = useState('minutes');
+  const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
+  
+  // State for Report Builder
+  const [selectedTemplate, setSelectedTemplate] = useState('minutes');
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  const handleGenerate = () => {
+    setIsGenerating(true);
+    setTimeout(() => {
+      setIsGenerating(false);
+      alert("Report generated successfully!");
+    }, 2000);
+  };
+
+  const handleGenerateReportModal = (templateId: string) => {
+    // For the modal version if needed
+    console.log(templateId);
+    setIsTemplateModalOpen(false);
+  };
 
   // Mock data for the view
   const meetingData = {
@@ -21,8 +46,22 @@ const MeetingSummaryDetail: React.FC = () => {
     attendees: 12,
   };
 
+  // Data for Report Builder
+  const reportSections = [
+    { id: 1, title: "Executive Summary", desc: "High-level overview of the meeting outcomes.", icon: Type, color: "bg-purple-100 text-purple-600" },
+    { id: 2, title: "Key Decisions", desc: "Approved items: Budget increase, timeline extension.", icon: Gavel, color: "bg-blue-100 text-blue-600" },
+    { id: 3, title: "Next Steps & Action Items", desc: "3 items assigned to team members.", icon: CheckSquare, color: "bg-green-100 text-green-600" },
+  ];
+
+  const reportTemplates = [
+    { id: 'minutes', name: 'Minutes of Meeting', desc: 'Standard formal record of discussion.', icon: FileText },
+    { id: 'activity', name: 'Activity Report', desc: 'Focus on outcomes and metrics.', icon: FileBarChart },
+    { id: 'memo', name: 'Memorandum', desc: 'Internal communication format.', icon: Mail },
+  ];
+
   const tabs = [
-    { id: 'summary', label: 'Summary & Reports', icon: FileText },
+    { id: 'minutes', label: 'Minutes of Meeting', icon: FileText },
+    { id: 'generate', label: 'Generate Report', icon: FileOutput },
     { id: 'actions', label: 'Action Items', icon: CheckSquare },
     { id: 'transcript', label: 'Recording & Transcript', icon: Mic },
     { id: 'files', label: 'Shared Files', icon: File },
@@ -32,8 +71,8 @@ const MeetingSummaryDetail: React.FC = () => {
   ];
 
   return (
-    <div className="p-6 md:p-8 bg-gray-50 dark:bg-slate-900 min-h-full">
-      {/* Header */}
+    <div className="p-6 md:p-8 bg-gray-50 dark:bg-slate-900 min-h-full relative">
+      {/* Header (Restored to your original design) */}
       <div className="mb-6">
         <button 
           onClick={() => navigate('/meeting-history')}
@@ -51,6 +90,13 @@ const MeetingSummaryDetail: React.FC = () => {
             </div>
           </div>
           <div className="flex gap-3">
+            {/* Quick button to switch to generate tab */}
+            <button 
+              onClick={() => setActiveTab('generate')}
+              className="px-4 py-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-200 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors shadow-sm flex items-center gap-2"
+            >
+              <FilePlus className="w-4 h-4" /> Generate Report
+            </button>
             <button className="px-4 py-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-200 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors shadow-sm flex items-center gap-2">
               <Download className="w-4 h-4" /> Export
             </button>
@@ -85,13 +131,12 @@ const MeetingSummaryDetail: React.FC = () => {
       {/* Tab Contents */}
       <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6 min-h-[400px]">
         
-        {/* === SUMMARY & REPORTS TAB === */}
-        {activeTab === 'summary' && (
+        {/* === TAB 1: MINUTES OF MEETING (The Formal View) === */}
+        {activeTab === 'minutes' && (
           <div className="space-y-8">
-            {/* AI Summary */}
             <section>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                <span className="w-1.5 h-6 bg-violet-500 rounded-full"></span> Meeting Highlights
+                <span className="w-1.5 h-6 bg-violet-500 rounded-full"></span> Executive Summary
               </h3>
               <div className="prose dark:prose-invert max-w-none text-gray-600 dark:text-slate-300 text-sm leading-relaxed">
                 <p>
@@ -100,48 +145,163 @@ const MeetingSummaryDetail: React.FC = () => {
                   communication features using WebRTC. The panel provided feedback on the scope of the project, 
                   suggesting a phased rollout for the mobile application version.
                 </p>
-                <ul className="mt-4 list-disc pl-5 space-y-1">
-                  <li>Approved the core module architecture.</li>
-                  <li>Requested a detailed database schema revision by next Friday.</li>
-                  <li>Highlighted potential security risks in the authentication flow.</li>
-                </ul>
               </div>
             </section>
 
-            <hr className="border-gray-100 dark:border-slate-700" />
+            <section className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-gray-100 dark:border-slate-700">
+               <div>
+                  <h4 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-green-500" /> Key Decisions
+                  </h4>
+                  <div className="space-y-3">
+                     <div className="flex items-start gap-3 p-3 bg-green-50 dark:bg-green-900/10 rounded-lg border border-green-100 dark:border-green-900/30">
+                        <span className="text-sm text-gray-700 dark:text-slate-200">Proceed with React Native for mobile MVP.</span>
+                     </div>
+                     <div className="flex items-start gap-3 p-3 bg-green-50 dark:bg-green-900/10 rounded-lg border border-green-100 dark:border-green-900/30">
+                        <span className="text-sm text-gray-700 dark:text-slate-200">Adopt Supabase for backend infrastructure.</span>
+                     </div>
+                  </div>
+               </div>
+               <div>
+                  <h4 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 text-red-500" /> Open Issues
+                  </h4>
+                  <div className="space-y-3">
+                     <div className="flex items-start gap-3 p-3 bg-red-50 dark:bg-red-900/10 rounded-lg border border-red-100 dark:border-red-900/30">
+                        <span className="text-sm text-gray-700 dark:text-slate-200">Budget approval for cloud hosting pending finance review.</span>
+                     </div>
+                  </div>
+               </div>
+            </section>
+          </div>
+        )}
 
-            {/* Formal Report Upload Section */}
-            <section>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                <span className="w-1.5 h-6 bg-blue-500 rounded-full"></span> Formal Documentation
-              </h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Existing Report */}
-                <div className="border border-gray-200 dark:border-slate-700 rounded-xl p-4 flex items-start gap-4 hover:shadow-md transition-shadow">
-                  <div className="w-12 h-12 bg-red-50 dark:bg-red-900/20 rounded-lg flex items-center justify-center flex-shrink-0 text-red-600 dark:text-red-400">
-                    <FileText className="w-6 h-6" />
+        {/* === TAB 2: GENERATE REPORT (New Report Builder) === */}
+        {activeTab === 'generate' && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            {/* Left Column: Report Builder */}
+            <div className="lg:col-span-2">
+              <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm p-1">
+                
+                <div className="flex items-center justify-between mb-6 p-4">
+                  <div className="flex items-center gap-2">
+                    <span className="w-1.5 h-6 bg-violet-500 rounded-full"></span>
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">Report Builder</h3>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <h4 className="text-sm font-medium text-gray-900 dark:text-white truncate">Final_Proposal_v2.pdf</h4>
-                    <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">Uploaded by Klariz Habla • 2.4 MB</p>
-                    <div className="flex gap-3 mt-3">
-                      <button className="text-xs font-medium text-violet-600 dark:text-violet-400 hover:underline">View</button>
-                      <button className="text-xs font-medium text-gray-500 dark:text-slate-400 hover:text-gray-700 hover:underline">Download</button>
-                    </div>
-                  </div>
+                  <button className="text-sm text-violet-600 dark:text-violet-400 font-medium hover:underline">Clear All</button>
                 </div>
 
-                {/* Upload New */}
-                <div className="border-2 border-dashed border-gray-300 dark:border-slate-600 rounded-xl p-6 flex flex-col items-center justify-center text-center hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors cursor-pointer group">
-                  <div className="w-10 h-10 bg-gray-100 dark:bg-slate-700 rounded-full flex items-center justify-center mb-3 group-hover:bg-white dark:group-hover:bg-slate-600 transition-colors">
-                    <Upload className="w-5 h-5 text-gray-500 dark:text-slate-400" />
+                <div className="px-4">
+                  <p className="text-xs font-semibold text-gray-500 dark:text-slate-400 mb-3 uppercase tracking-wider">Quick Add Content</p>
+                  <div className="flex flex-wrap gap-3 mb-8">
+                    <button className="flex items-center gap-2 px-3 py-2 bg-purple-50 text-purple-700 border border-purple-200 rounded-lg text-xs font-semibold hover:bg-purple-100 transition-colors">
+                      <Gavel className="w-3.5 h-3.5" /> + Key Decisions
+                    </button>
+                    <button className="flex items-center gap-2 px-3 py-2 bg-blue-50 text-blue-700 border border-blue-200 rounded-lg text-xs font-semibold hover:bg-blue-100 transition-colors">
+                      <CheckSquare className="w-3.5 h-3.5" /> + Action Items
+                    </button>
+                    <button className="flex items-center gap-2 px-3 py-2 bg-green-50 text-green-700 border border-green-200 rounded-lg text-xs font-semibold hover:bg-green-100 transition-colors">
+                      <Users className="w-3.5 h-3.5" /> + Attendee List
+                    </button>
+                    <button className="flex items-center gap-2 px-3 py-2 bg-orange-50 text-orange-700 border border-orange-200 rounded-lg text-xs font-semibold hover:bg-orange-100 transition-colors">
+                      <AlertTriangle className="w-3.5 h-3.5" /> + Risks & Blockers
+                    </button>
                   </div>
-                  <p className="text-sm font-medium text-gray-700 dark:text-slate-200">Upload Formal Report</p>
-                  <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">Drag & drop or click to browse</p>
+
+                  <p className="text-xs font-semibold text-gray-500 dark:text-slate-400 mb-3 uppercase tracking-wider">Report Structure</p>
+                  <div className="space-y-3 mb-6">
+                    {reportSections.map((section) => (
+                      <div key={section.id} className="flex items-center gap-3 p-3 border border-gray-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 hover:shadow-sm transition-shadow group cursor-move">
+                        <GripVertical className="w-5 h-5 text-gray-300 dark:text-slate-600" />
+                        <div className={`p-2 rounded-lg ${section.color}`}>
+                          <section.icon className="w-4 h-4" />
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="text-sm font-bold text-gray-900 dark:text-white">{section.title}</h4>
+                          <p className="text-xs text-gray-500 dark:text-slate-400">{section.desc}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <button className="w-full py-3 mb-4 border-2 border-dashed border-gray-300 dark:border-slate-600 rounded-lg text-sm font-medium text-gray-500 dark:text-slate-400 hover:border-violet-400 hover:text-violet-600 dark:hover:border-violet-500 transition-colors flex items-center justify-center gap-2">
+                    <FilePlus className="w-4 h-4" /> Add Custom Section
+                  </button>
                 </div>
               </div>
-            </section>
+            </div>
+
+            {/* Right Column: Template Selection */}
+            <div className="lg:col-span-1">
+              <div className="sticky top-6">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                  <FilePlus className="w-5 h-5 text-blue-500" /> Select Template
+                </h3>
+                
+                <div className="space-y-3 mb-6">
+                  <p className="text-xs text-gray-500 dark:text-slate-400 mb-2">Choose a format for your final report:</p>
+                  {reportTemplates.map((template) => {
+                    const isSelected = selectedTemplate === template.id;
+                    return (
+                      <div 
+                        key={template.id}
+                        onClick={() => setSelectedTemplate(template.id)}
+                        className={`
+                          relative p-4 border rounded-xl cursor-pointer transition-all
+                          ${isSelected 
+                            ? 'border-violet-600 bg-violet-50/50 dark:bg-violet-900/10 ring-1 ring-violet-600' 
+                            : 'border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-violet-300'}
+                        `}
+                      >
+                        {isSelected && (
+                          <div className="absolute top-3 right-3 text-violet-600">
+                            <Check className="w-4 h-4" />
+                          </div>
+                        )}
+                        <div className="flex items-start gap-3">
+                          <div className={`p-2 rounded-lg ${isSelected ? 'bg-violet-100 text-violet-600' : 'bg-gray-100 text-gray-500 dark:bg-slate-700'}`}>
+                            <template.icon className="w-5 h-5" />
+                          </div>
+                          <div>
+                            <h4 className={`text-sm font-bold ${isSelected ? 'text-violet-900 dark:text-violet-100' : 'text-gray-900 dark:text-white'}`}>
+                              {template.name}
+                            </h4>
+                            <p className="text-xs text-gray-500 dark:text-slate-400 mt-1 leading-relaxed pr-2">
+                              {template.desc}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="flex items-center justify-between mb-6 px-1">
+                  <span className="text-sm font-medium text-gray-700 dark:text-slate-300">Format</span>
+                  <select className="bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-200 text-sm rounded-lg p-2 focus:ring-violet-500 focus:border-violet-500">
+                    <option>PDF Document (.pdf)</option>
+                    <option>Word Document (.docx)</option>
+                  </select>
+                </div>
+
+                <button 
+                  onClick={handleGenerate}
+                  disabled={isGenerating}
+                  className="w-full py-2.5 bg-violet-600 hover:bg-violet-700 text-white rounded-lg text-sm font-bold shadow-md shadow-violet-200 dark:shadow-none transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                >
+                  {isGenerating ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" /> Generating...
+                    </>
+                  ) : (
+                    <>
+                      Generate & Download <Download className="w-4 h-4" />
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
           </div>
         )}
 
@@ -158,7 +318,7 @@ const MeetingSummaryDetail: React.FC = () => {
               { id: 3, text: "Draft user acceptance testing script", owner: "QA Lead", due: "Nov 28", status: "Pending" },
             ].map(item => (
               <div key={item.id} className="flex items-center p-4 border border-gray-200 dark:border-slate-700 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors">
-                <input type="checkbox" className="w-5 h-5 text-violet-600 rounded border-gray-300 focus:ring-violet-500" />
+                <input aria-label="Mark as done" type="checkbox" className="w-5 h-5 text-violet-600 rounded border-gray-300 focus:ring-violet-500" />
                 <div className="ml-4 flex-1">
                   <p className="text-sm font-medium text-gray-900 dark:text-white">{item.text}</p>
                   <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5">Assigned to: {item.owner} • Due: {item.due}</p>
@@ -171,195 +331,23 @@ const MeetingSummaryDetail: React.FC = () => {
           </div>
         )}
 
-        {/* === RECORDING & TRANSCRIPT TAB === */}
-        {activeTab === 'transcript' && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[500px]">
-            {/* Player */}
-            <div className="lg:col-span-2 flex flex-col bg-black rounded-lg overflow-hidden relative group">
-              <div className="flex-1 flex items-center justify-center bg-gray-900">
-                {/* Fake waveform viz */}
-                <div className="flex items-center justify-center gap-1 h-32 w-full px-12 opacity-50">
-                   {[...Array(40)].map((_, i) => (
-                     <div key={i} className="w-1.5 bg-violet-500 rounded-full" style={{ height: `${Math.random() * 100}%`}}></div>
-                   ))}
-                </div>
+        {/* === OTHER TABS PLACEHOLDER === */}
+        {(!['minutes', 'generate', 'actions'].includes(activeTab)) && (
+          <div className="flex items-center justify-center h-64 bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700">
+              <div className="text-center text-gray-500">
+                  <FileText className="w-10 h-10 mx-auto mb-3 opacity-20" />
+                  <p>Content for {activeTab} goes here...</p>
               </div>
-              {/* Controls */}
-              <div className="bg-gray-800 p-4 flex items-center gap-4">
-                <button className="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center hover:bg-gray-200 transition-colors">
-                  <Play className="w-5 h-5 ml-1" />
-                </button>
-                <div className="flex-1">
-                  <div className="h-1 bg-gray-600 rounded-full w-full relative">
-                    <div className="absolute top-0 left-0 h-full w-1/3 bg-violet-500 rounded-full"></div>
-                  </div>
-                  <div className="flex justify-between text-xs text-gray-400 mt-1">
-                    <span>14:20</span>
-                    <span>45:00</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Transcript */}
-            <div className="border-l border-gray-200 dark:border-slate-700 pl-6 flex flex-col h-full">
-              <div className="flex justify-between items-center mb-4">
-                <h4 className="font-semibold text-gray-900 dark:text-white">Transcript</h4>
-                <div className="flex gap-2">
-                  <button className="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-700 rounded"><Search className="w-4 h-4 text-gray-500" /></button>
-                  <button className="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-700 rounded"><Download className="w-4 h-4 text-gray-500" /></button>
-                </div>
-              </div>
-              <div className="flex-1 overflow-y-auto space-y-4 pr-2">
-                {[
-                  { time: "00:05", speaker: "Klariz Habla", text: "Okay, let's start the defense. The floor is yours." },
-                  { time: "00:12", speaker: "You", text: "Thank you. Today we present Synthia, an all-in-one collaboration workspace." },
-                  { time: "02:45", speaker: "Panelist A", text: "Can you elaborate on the security measures for the file sharing module?" },
-                  { time: "03:10", speaker: "You", text: "Yes, we implement end-to-end encryption for all transferred assets..." },
-                ].map((line, idx) => (
-                  <div key={idx} className="group hover:bg-gray-50 dark:hover:bg-slate-700/50 p-2 rounded transition-colors cursor-pointer">
-                    <p className="text-xs font-bold text-violet-600 dark:text-violet-400 mb-1">{line.speaker} <span className="text-gray-400 font-normal ml-2">{line.time}</span></p>
-                    <p className="text-sm text-gray-700 dark:text-slate-300">{line.text}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* === SHARED FILES TAB === */}
-        {activeTab === 'files' && (
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Files Shared in Meeting</h3>
-            <div className="space-y-2">
-              {[
-                { name: "System_Architecture_v1.png", size: "1.2 MB", type: "Image" },
-                { name: "Budget_Proposal.xlsx", size: "450 KB", type: "Sheet" },
-                { name: "Frontend_Mockups.fig", size: "12 MB", type: "Figma" },
-              ].map((file, idx) => (
-                <div key={idx} className="flex items-center justify-between p-3 border border-gray-200 dark:border-slate-700 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700/50">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gray-100 dark:bg-slate-700 rounded flex items-center justify-center">
-                      <File className="w-5 h-5 text-gray-500" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-900 dark:text-white">{file.name}</p>
-                      <p className="text-xs text-gray-500 dark:text-slate-400">{file.type} • {file.size}</p>
-                    </div>
-                  </div>
-                  <button className="text-gray-400 hover:text-gray-600 dark:hover:text-white"><MoreVertical className="w-5 h-5" /></button>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* === ATTENDANCE TAB === */}
-        {activeTab === 'attendance' && (
-          <div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-              <div className="bg-gray-50 dark:bg-slate-700/50 p-4 rounded-lg border border-gray-100 dark:border-slate-700">
-                <p className="text-xs text-gray-500 dark:text-slate-400 uppercase font-bold">Total Attendees</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">12</p>
-              </div>
-              <div className="bg-gray-50 dark:bg-slate-700/50 p-4 rounded-lg border border-gray-100 dark:border-slate-700">
-                <p className="text-xs text-gray-500 dark:text-slate-400 uppercase font-bold">Avg Duration</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">42m</p>
-              </div>
-              <div className="bg-gray-50 dark:bg-slate-700/50 p-4 rounded-lg border border-gray-100 dark:border-slate-700">
-                <p className="text-xs text-gray-500 dark:text-slate-400 uppercase font-bold">Start Time</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">10:02 AM</p>
-              </div>
-            </div>
-            
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-gray-50 dark:bg-slate-700/50">
-                  <tr>
-                    <th className="py-3 px-4 font-semibold text-gray-700 dark:text-slate-300 rounded-l-lg">Name</th>
-                    <th className="py-3 px-4 font-semibold text-gray-700 dark:text-slate-300">Join Time</th>
-                    <th className="py-3 px-4 font-semibold text-gray-700 dark:text-slate-300">Leave Time</th>
-                    <th className="py-3 px-4 font-semibold text-gray-700 dark:text-slate-300 rounded-r-lg">Duration</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100 dark:divide-slate-700">
-                  {[
-                    { name: "Klariz Habla", join: "10:00 AM", leave: "11:30 AM", dur: "1h 30m" },
-                    { name: "Peter Parker", join: "10:02 AM", leave: "11:30 AM", dur: "1h 28m" },
-                    { name: "Sarah Chen", join: "10:05 AM", leave: "11:15 AM", dur: "1h 10m" },
-                  ].map((p, idx) => (
-                    <tr key={idx}>
-                      <td className="py-3 px-4 font-medium text-gray-900 dark:text-white">{p.name}</td>
-                      <td className="py-3 px-4 text-gray-600 dark:text-slate-400">{p.join}</td>
-                      <td className="py-3 px-4 text-gray-600 dark:text-slate-400">{p.leave}</td>
-                      <td className="py-3 px-4 text-gray-600 dark:text-slate-400">{p.dur}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {/* === CHAT HISTORY TAB === */}
-        {activeTab === 'chat' && (
-          <div className="space-y-6 max-w-3xl">
-            <div className="flex gap-4">
-              <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center font-bold text-blue-700 flex-shrink-0">KH</div>
-              <div>
-                <div className="flex items-baseline gap-2">
-                  <span className="font-bold text-gray-900 dark:text-white">Klariz Habla</span>
-                  <span className="text-xs text-gray-500">10:15 AM</span>
-                </div>
-                <div className="mt-1 bg-gray-50 dark:bg-slate-700 p-3 rounded-r-xl rounded-bl-xl text-gray-800 dark:text-slate-200 text-sm">
-                  Welcome everyone. Please verify if you can access the shared drive folder.
-                </div>
-              </div>
-            </div>
-            <div className="flex gap-4">
-              <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center font-bold text-purple-700 flex-shrink-0">PP</div>
-              <div>
-                <div className="flex items-baseline gap-2">
-                  <span className="font-bold text-gray-900 dark:text-white">Peter Parker</span>
-                  <span className="text-xs text-gray-500">10:16 AM</span>
-                </div>
-                <div className="mt-1 bg-gray-50 dark:bg-slate-700 p-3 rounded-r-xl rounded-bl-xl text-gray-800 dark:text-slate-200 text-sm">
-                  Access confirmed. I see the requirements doc.
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* === BREAKOUT ROOMS TAB === */}
-        {activeTab === 'breakout' && (
-          <div className="space-y-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Breakout Sessions (10:45 AM - 11:15 AM)</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {[
-                { name: "Room 1: Backend", participants: ["Peter Parker", "Dev Team A", "Dev Team B"] },
-                { name: "Room 2: Frontend", participants: ["Sarah Chen", "Designer A", "Designer B"] },
-                { name: "Room 3: QA", participants: ["QA Lead", "Tester A"] },
-              ].map((room, idx) => (
-                <div key={idx} className="border border-gray-200 dark:border-slate-700 rounded-lg p-4">
-                  <div className="flex justify-between items-center mb-3">
-                    <h4 className="font-semibold text-gray-900 dark:text-white">{room.name}</h4>
-                    <span className="text-xs bg-gray-100 dark:bg-slate-700 px-2 py-1 rounded text-gray-600 dark:text-slate-300">30 mins</span>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {room.participants.map((p, i) => (
-                      <span key={i} className="px-2 py-1 bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300 text-xs rounded-full font-medium">
-                        {p}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
           </div>
         )}
 
       </div>
+
+      <ReportTemplateModal 
+        isOpen={isTemplateModalOpen}
+        onClose={() => setIsTemplateModalOpen(false)}
+        onSelect={handleGenerateReportModal}
+      />
     </div>
   );
 };
